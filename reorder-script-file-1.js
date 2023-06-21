@@ -12,6 +12,7 @@ async function fetchReorderCouponCode() {
   sessionStorage.setItem("couponsData", JSON.stringify(data));
   return data;
 }
+
 if (accountPage) {
   if (document.getElementsByClassName("account").length) {
     initReorderApp();
@@ -20,8 +21,8 @@ if (accountPage) {
 
 async function initReorderApp() {
   let table = document.querySelector('table[role="table"].order-history');
-  let tbody = table.querySelector('tbody[role="rowgroup"]');
-  let trs = tbody.querySelectorAll('tr[role="row"]');
+  let tbody = table.querySelector("tbody");
+  let trs = tbody.querySelectorAll("tr");
   var totalPriceElement = document.querySelector("#total-price");
   var couponCode = await fetchReorderCouponCode();
   let couponCodeMessage = null;
@@ -136,7 +137,6 @@ async function initReorderApp() {
           mobileMediaQuery.addListener(handleMobileQueryChange);
           handleMobileQueryChange(mobileMediaQuery);
         }
-        console.log(couponCode.data);
         const totalPrice = lineItems.reduce((iTM, lineItem) => {
           return iTM + Number(lineItem.price);
         }, 0);
@@ -149,9 +149,7 @@ async function initReorderApp() {
           lineItems.length
         } products</h4></div> <div style="display:flex;gap:10px;justify-content: end; margin-top:10px ">
   <button onclick="handleReorderATC()" style="padding: 10px 15px;background-color: white;cursor: pointer;" class="btn">Add to cart</button>
-<button onclick="handleReorderCheckOut('${
-          couponCode.data.title
-        }')" style="padding: 10px 20px;background-color: #0289E5;color:white; border:none;cursor: pointer;">Checkout</button></div>`;
+<button onclick="handleReorderCheckOut()" style="padding: 10px 20px;background-color: #0289E5;color:white; border:none;cursor: pointer;">Checkout</button></div>`;
       };
     }
     popup.querySelector("#closeButton").addEventListener("click", () => {
@@ -233,9 +231,7 @@ function updateTotalPrice(orderId) {
       allProductCards.length
     } products</h4></div><div style="display:flex;gap:10px;justify-content: end; margin-top:10px ">
   <button onclick="handleReorderATC()" style="padding: 10px 15px;background-color: white;cursor: pointer;" class="btn">Add to cart</button>
-<button onclick="handleReorderCheckOut('${
-      couponCode.data.title
-    }')" style="padding: 10px 20px;background-color: #0289E5;color:white; border:none;cursor: pointer;">Checkout</button></div>`;
+<button onclick="handleReorderCheckOut()" style="padding: 10px 20px;background-color: #0289E5;color:white; border:none;cursor: pointer;">Checkout</button></div>`;
   } else {
     totalPriceElement.innerHTML = `<div>No product found</div>`;
   }
@@ -276,8 +272,9 @@ function handleReorderATC() {
       console.log("Error adding items to cart:", error);
     });
 }
-function handleReorderCheckOut(title) {
-  let discountCode = title;
+async function handleReorderCheckOut() {
+  let couponCode = await fetchReorderCouponCode();
+  discountCode = couponCode?.data?.title || null;
   const allInputs = document.querySelectorAll(".reorder-product-input");
   const lineItems = [];
   allInputs?.forEach((input) => {
@@ -297,10 +294,14 @@ function handleReorderCheckOut(title) {
   })
     .then((response) => {
       let url = `/checkout`;
-      let discountApplyUrl =
-        "https://" + Shopify.shop + "/discount/" + discountCode;
-      fetch(discountApplyUrl);
-      window.location.href = url;
+      if (discountCode !== null) {
+        let discountApplyUrl =
+          "https://" + Shopify.shop + "/discount/" + discountCode;
+        fetch(discountApplyUrl);
+        window.location.href = url;
+      } else {
+        window.location.href = url;
+      }
     })
     .catch((error) => {
       console.log("Error adding items to cart:", error);
