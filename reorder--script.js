@@ -6,7 +6,7 @@ async function fetchReorderCouponCode() {
   let couponInSession = sessionStorage.getItem("couponsData");
   if (couponInSession) return JSON.parse(couponInSession);
   const response = await fetch(
-    `${baseUrl}/public/popup/coupons?shop=${Shopify.shop}`
+    `http://localhost:49891/public/popup/coupons?shop=${Shopify.shop}`
   );
   const data = await response.json();
   sessionStorage.setItem("couponsData", JSON.stringify(data));
