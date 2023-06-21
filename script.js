@@ -1,12 +1,12 @@
 const Url = window.location.href;
 const accountPage = Url.match(/\account$/) ? Url.match(/\account$/).length : 0;
-var apiLink = "https://api.reorder.sandbox.sapp.springrain.io";
+var baseUrl = "https://api.reorder.sandbox.sapp.springrain.io";
 var currencyCode = Shopify.currency.active;
 async function fetchReorderCouponCode() {
   let couponInSession = sessionStorage.getItem("couponsData");
   if (couponInSession) return JSON.parse(couponInSession);
   const response = await fetch(
-    `http://localhost:58628/public/popup/coupons?shop=${Shopify.shop}`
+    `${baseUrl}/public/popup/coupons?shop=${Shopify.shop}`
   );
   const data = await response.json();
   sessionStorage.setItem("couponsData", JSON.stringify(data));
